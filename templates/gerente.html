@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#111527">
+    <title>Gerente Geral — {{ escola }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+    <link rel="icon" type="image/png"
+          href="{{ url_for('static', filename='img/logomelhorada.png') }}">
+</head>
+<body data-inatividade="{{ minutos_inatividade }}">
+
+<!-- =================== LOGIN DO GERENTE GERAL =================== -->
+<div id="telaLogin" class="tela-login oculto">
+    <div class="login">
+        <div class="orgao"{% if cor_faixa %} style="background: {{ cor_faixa }}"{% endif %}>
+            {% if brasao_gov %}
+            <img class="orgao__brasao" src="{{ url_for('static', filename=brasao_gov) }}"
+                 alt="Escola Técnica Estadual José Nivaldo Pereira Ramos">
+            {% else %}
+            <span class="orgao__selo" aria-hidden="true">ETE</span>
+            {% endif %}
+        </div>
+        <div class="login__lado">
+            <div class="login__marca">
+                <span>Gerente Geral</span>
+            </div>
+            <div>
+                <h1>Visão geral da rede</h1>
+                <p>Acompanhe o uso dos laboratórios e defina quem administra
+                   o sistema no dia a dia da escola.</p>
+            </div>
+            <ul class="login__itens">
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg>
+                    Indicadores de ocupação, reservas e faltas
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg>
+                    Criação das contas dos gestores locais
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg>
+                    Acesso a tudo que o gestor local enxerga
+                </li>
+            </ul>
+        </div>
+
+        <div class="login__form">
+            <div class="login__topo-mobile">
+                <strong>Gerente Geral</strong>
+            </div>
+            <h2>Área do gerente geral</h2>
+
+            <form id="formLogin">
+                <div class="campo">
+                    <label for="senha">Senha do gerente geral</label>
+                    <input type="password" id="senha" data-olho
+                           autocomplete="current-password" required>
+                </div>
+                <div id="erroLogin" class="aviso aviso--erro oculto"></div>
+                <button type="submit" class="botao botao--largo">Entrar</button>
+            </form>
+
+            <div class="rodape-login">
+                A senha do gerente geral é única e não fica na lista de gestores.
+
+                <span class="rodape-login__titulo">Outros acessos</span>
+                <div class="acessos">
+                    <a class="acesso" href="/gestor">
+                        <span class="acesso__texto">
+                            <strong>Gestor Local</strong>
+                            <span>Painel da escola</span>
+                        </span>
+                    </a>
+                    <a class="acesso" href="/">
+                        <span class="acesso__texto">
+                            <strong>Professor</strong>
+                            <span>Reservar laboratório</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =================== PAINEL =================== -->
+<div id="app" class="oculto">
+    <div class="painel">
+
+        <!-- ---------- MENU LATERAL ---------- -->
+        <aside class="lateral">
+            <div class="lateral__marca">
+                <div>
+                    <strong>Painel do gerente geral</strong>
+                    <span>{{ escola }}</span>
+                </div>
+            </div>
+
+            <nav class="lateral__menu" aria-label="Seções">
+                <span class="lateral__grupo">Acompanhamento</span>
+
+                <button class="navegacao__item ativo" data-aba="visao" data-principal>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>
+                    </svg>
+                    <span class="navegacao__rotulo">Visão geral</span>
+                    <span class="navegacao__rotulo-curto">Visão</span>
+                </button>
+
+                <span class="lateral__grupo">Hierarquia</span>
+
+                <button class="navegacao__item" data-aba="gestores" data-principal>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <circle cx="9" cy="8" r="3.5"/>
+                        <path d="M2.5 20a6.5 6.5 0 0 1 13 0M17 11.5a3 3 0 1 0 0-6M18 20a6.2 6.2 0 0 0-2-4.5"/>
+                    </svg>
+                    <span class="navegacao__rotulo">Gestores locais</span>
+                    <span class="navegacao__rotulo-curto">Gestores</span>
+                </button>
+
+                <button class="navegacao__item" data-aba="unidades" data-principal>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path d="M3 21h18M5 21V7l7-4 7 4v14"/>
+                        <path d="M9 21v-5h6v5M9 10h.01M15 10h.01"/>
+                    </svg>
+                    <span class="navegacao__rotulo">Unidades / Escolas</span>
+                    <span class="navegacao__rotulo-curto">Unidades</span>
+                </button>
+
+                <span class="lateral__grupo">Configuração</span>
+
+                <button class="navegacao__item" data-aba="conta" data-principal>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <rect x="4" y="10" width="16" height="10" rx="2"/>
+                        <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+                    </svg>
+                    <span class="navegacao__rotulo">Minha conta</span>
+                    <span class="navegacao__rotulo-curto">Conta</span>
+                </button>
+            </nav>
+
+            <div class="lateral__rodape">
+                <div class="usuario">
+                    <div class="avatar">GG</div>
+                    <div class="usuario__dados">
+                        <strong>Gerente Geral</strong>
+                        <span>Topo da hierarquia</span>
+                    </div>
+                </div>
+                <button class="botao botao--vazio botao--pequeno botao--largo acao-sair">
+                    Sair da conta
+                </button>
+            </div>
+        </aside>
+
+        <!-- ---------- ÁREA DE CONTEÚDO ---------- -->
+        <div class="area">
+            <header class="topo">
+                <div>
+                    <span class="topo__migalha">Gerência geral</span>
+                </div>
+                <div class="topo__direita">
+                    <span class="topo__data" id="dataHoje"></span>
+                    <button class="botao botao--vazio botao--pequeno acao-sair so-tela-pequena">
+                        Sair
+                    </button>
+                    <button type="button" class="avatar avatar--pequeno avatar--botao"
+                            data-ir-para-conta
+                            aria-label="Abrir minha conta" title="Minha conta">GG</button>
+                </div>
+            </header>
+
+            <main class="pagina">
+
+                <!-- ---------- VISÃO GERAL ---------- -->
+                <section id="abaVisao" class="aba">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Visão geral</h1>
+                            <p>O retrato da escola: equipe, laboratórios e uso no período.</p>
+                        </div>
+                        <button class="botao botao--vazio botao--pequeno" id="botaoAtualizarVisao">
+                            Atualizar
+                        </button>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="linha-campos linha-campos--3">
+                            <div class="campo">
+                                <label for="visaoDe">De</label>
+                                <input type="date" id="visaoDe">
+                            </div>
+                            <div class="campo">
+                                <label for="visaoAte">Até</label>
+                                <input type="date" id="visaoAte">
+                            </div>
+                            <div class="campo" style="justify-content:flex-end">
+                                <button class="botao" id="botaoFiltrarVisao" type="button">
+                                    Aplicar período
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="conteudoVisao">
+                        <div class="lista-vazia"><span class="carregando"></span></div>
+                    </div>
+                </section>
+
+                <!-- ---------- GESTORES LOCAIS ---------- -->
+                <section id="abaGestores" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Gestores locais</h1>
+                            <p>São eles que cadastram laboratórios, professores e regras.
+                               O usuário criado aqui é o que o gestor usa para entrar.</p>
+                        </div>
+                        <button class="botao" id="botaoNovoGestor">+ Novo gestor local</button>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="busca">
+                            <svg class="busca__icone" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7"/>
+                                <path d="M20.5 20.5 16 16"/>
+                            </svg>
+                            <input type="search" id="buscaGestor"
+                                   aria-label="Buscar gestor local"
+                                   placeholder="Buscar por nome, usuário, e-mail ou telefone">
+                        </div>
+                        <p class="busca__contagem" id="contagemGestores"></p>
+
+                        <div class="tabela-envolvida">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Gestor</th>
+                                        <th>Usuário</th>
+                                        <th>E-mail</th>
+                                        <th>Telefone</th>
+                                        <th>Unidade</th>
+                                        <th>Último acesso</th>
+                                        <th>Situação</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="corpoGestores"></tbody>
+                            </table>
+                        </div>
+                        <div id="vazioGestores"></div>
+                    </div>
+                </section>
+
+                <!-- ---------- UNIDADES / ESCOLAS ---------- -->
+                <section id="abaUnidades" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Unidades / Escolas</h1>
+                            <p>Cada escola da rede com a sua equipe. Abra uma unidade para
+                               ver o gestor local e os professores cadastrados nela.</p>
+                        </div>
+                        <button class="botao" id="botaoNovaUnidade">+ Nova unidade</button>
+                    </div>
+
+                    <div id="listaUnidades">
+                        <div class="lista-vazia"><span class="carregando"></span></div>
+                    </div>
+                </section>
+
+                <!-- ---------- MINHA CONTA ---------- -->
+                <section id="abaConta" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Minha conta</h1>
+                            <p>O acesso do gerente geral é único e não aparece na lista de
+                               gestores. Troque a senha inicial no primeiro acesso.</p>
+                        </div>
+                    </div>
+
+                    <form id="formSenhaGerente" class="cartao">
+                        <div class="campo">
+                            <label for="senhaAtual">Senha atual</label>
+                            <input type="password" id="senhaAtual" data-olho
+                                   autocomplete="current-password" required>
+                        </div>
+                        <div class="linha-campos linha-campos--2">
+                            <div class="campo">
+                                <label for="senhaNova">Nova senha</label>
+                                <input type="password" id="senhaNova" data-olho
+                                       autocomplete="new-password"
+                                       placeholder="mínimo 6 caracteres" required>
+                            </div>
+                            <div class="campo">
+                                <label for="senhaConfirma">Repita a nova senha</label>
+                                <input type="password" id="senhaConfirma" data-olho
+                                       autocomplete="new-password" required>
+                            </div>
+                        </div>
+                        <div id="erroSenhaGerente" class="aviso aviso--erro oculto"></div>
+                        <button class="botao" type="submit">Trocar senha</button>
+                    </form>
+
+                    <div class="cartao">
+                        <div class="cartao__topo"><h3>Como a hierarquia funciona</h3></div>
+                        <div class="hierarquia">
+                            <div class="hierarquia__nivel">
+                                <span class="hierarquia__marca">GG</span>
+                                <div>
+                                    <strong>Gerente Geral</strong>
+                                    <p>Vê os indicadores da escola e cria, edita ou desativa
+                                       as contas dos gestores locais.</p>
+                                </div>
+                            </div>
+                            <div class="hierarquia__nivel">
+                                <span class="hierarquia__marca hierarquia__marca--primaria">GL</span>
+                                <div>
+                                    <strong>Gestor Local</strong>
+                                    <p>Cadastra laboratórios, professores, horários, bloqueios e
+                                       regras — e cria as contas dos professores.</p>
+                                </div>
+                            </div>
+                            <div class="hierarquia__nivel">
+                                <span class="hierarquia__marca hierarquia__marca--suave">PR</span>
+                                <div>
+                                    <strong>Professor</strong>
+                                    <p>Reserva os laboratórios respeitando as regras definidas
+                                       pelo gestor local.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</div>
+
+<div id="areaModal"></div>
+<div class="notificacoes" id="notificacoes"></div>
+
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/gerente.js') }}"></script>
+{% if bloquear_atalhos %}
+<script src="{{ url_for('static', filename='js/bloqueio.js') }}"></script>
+{% endif %}
+</body>
+</html>

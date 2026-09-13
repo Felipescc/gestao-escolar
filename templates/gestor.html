@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#111527">
+    <title>Gestor Local — {{ escola }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+    <link rel="icon" type="image/png"
+          href="{{ url_for('static', filename='img/logomelhorada.png') }}">
+</head>
+<body data-inatividade="{{ minutos_inatividade }}">
+
+<!-- =================== LOGIN DO GESTOR LOCAL =================== -->
+<div id="telaLogin" class="tela-login oculto">
+    <div class="login">
+        <div class="orgao"{% if cor_faixa %} style="background: {{ cor_faixa }}"{% endif %}>
+            {% if brasao_gov %}
+            <img class="orgao__brasao" src="{{ url_for('static', filename=brasao_gov) }}"
+                 alt="Escola Técnica Estadual José Nivaldo Pereira Ramos">
+            {% else %}
+            <span class="orgao__selo" aria-hidden="true">ETE</span>
+            {% endif %}
+        </div>
+        <div class="login__lado">
+            <div class="login__marca">
+                <span>Área do Gestor Local</span>
+            </div>
+            <div>
+                <h1>Gestão de Aulas e Laboratórios</h1>
+                <p>Cadastre salas e professores, defina as regras de reserva e
+                   acompanhe a ocupação da escola.</p>
+            </div>
+            <ul class="login__itens">
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg>
+                    Cadastro de laboratórios e professores
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg>
+                    Regras de carência e antecedência configuráveis
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg>
+                    Relatórios de uso por laboratório e professor
+                </li>
+            </ul>
+        </div>
+
+        <div class="login__form">
+            <div class="login__topo-mobile">
+                <strong>Área do Gestor Local</strong>
+            </div>
+            <h2>Área do gestor local</h2>
+
+            <form id="formLogin">
+                <div class="campo">
+                    <label for="identificador">Usuário ou e-mail</label>
+                    <input type="text" id="identificador" autocomplete="username"
+                           placeholder="ex.: gestor" required>
+                </div>
+                <div class="campo">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" data-olho
+                           autocomplete="current-password" required>
+                </div>
+                <div id="erroLogin" class="aviso aviso--erro oculto"></div>
+                <button type="submit" class="botao botao--largo">Entrar</button>
+            </form>
+
+            <div class="rodape-login">
+                Esqueceu a senha? Fale com o gerente geral.
+
+                <span class="rodape-login__titulo">Outros acessos</span>
+                <div class="acessos">
+                    <a class="acesso" href="/">
+                        <span class="acesso__texto">
+                            <strong>Professor</strong>
+                            <span>Reservar laboratório</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =================== PAINEL =================== -->
+<div id="app" class="oculto">
+    <div class="painel">
+
+        <!-- ---------- MENU LATERAL ---------- -->
+        <aside class="lateral">
+            <div class="lateral__marca">
+                <div>
+                    <strong>Painel do gestor local</strong>
+                    <span id="marcaUnidade">{{ escola }}</span>
+                </div>
+            </div>
+
+            <nav class="lateral__menu" aria-label="Seções">
+                <span class="lateral__grupo">Cadastros</span>
+
+                <button class="navegacao__item ativo" data-aba="grades" data-principal>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="16" rx="2"/>
+                        <path d="M3 10h18M9 4v16"/>
+                    </svg>
+                    <span class="navegacao__rotulo">Grades de Aulas</span>
+                    <span class="navegacao__rotulo-curto">Grades</span>
+                </button>
+                <button class="navegacao__item" data-aba="salas" data-principal>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="16" rx="2"/>
+                        <path d="M3 10h18M9 10v10"/>
+                    </svg>
+                    <span class="navegacao__rotulo">Salas de Aula</span>
+                    <span class="navegacao__rotulo-curto">Salas</span>
+                </button>
+                <button class="navegacao__item" data-aba="laboratorios">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path d="M9 3v7L4 19a2 2 0 0 0 1.8 3h12.4A2 2 0 0 0 20 19l-5-9V3M8 3h8M7 14h10"/>
+                    </svg>
+                    Laboratórios
+                </button>
+                <button class="navegacao__item" data-aba="professores" data-principal>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <circle cx="9" cy="8" r="3.5"/>
+                        <path d="M2.5 20a6.5 6.5 0 0 1 13 0M17 11.5a3 3 0 1 0 0-6M18 20a6.2 6.2 0 0 0-2-4.5"/>
+                    </svg>
+                    <span class="navegacao__rotulo">Professores</span>
+                    <span class="navegacao__rotulo-curto">Professores</span>
+                </button>
+                <button class="navegacao__item" data-aba="alunos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path d="M12 4 2.5 8.5 12 13l9.5-4.5z"/>
+                        <path d="M6.5 10.7V15c0 1.4 2.5 2.5 5.5 2.5s5.5-1.1 5.5-2.5v-4.3M21.5 8.5v5"/>
+                    </svg>
+                    Alunos
+                </button>
+                <button class="navegacao__item" data-aba="gestores" id="botaoAbaGestores">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <circle cx="8" cy="15" r="3.5"/>
+                        <path d="M10.5 12.5 20 3M16 7l3 3M13 10l2 2"/>
+                    </svg>
+                    Outros gestores
+                </button>
+
+                <span class="lateral__grupo">Operação</span>
+
+                <button class="navegacao__item" data-aba="reservas" data-principal>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2"/>
+                        <path d="M3 10h18M8 3v4M16 3v4"/>
+                    </svg>
+                    <span class="navegacao__rotulo">Reservas de Laboratórios</span>
+                    <span class="navegacao__rotulo-curto">Reservas</span>
+                </button>
+                <button class="navegacao__item" data-aba="projetos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path d="M12 3.5 4 7.5v9l8 4 8-4v-9z"/>
+                        <path d="M4 7.5l8 4 8-4M12 11.5v9"/>
+                    </svg>
+                    Projetos no Intervalo
+                </button>
+                <button class="navegacao__item" data-aba="computadores">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <rect x="2.5" y="4" width="19" height="12" rx="2"/>
+                        <path d="M8 20h8M10.5 16l-.5 4M13.5 16l.5 4"/>
+                    </svg>
+                    Uso de Computadores
+                </button>
+                <button class="navegacao__item" data-aba="calendario">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 7v5l3 2"/>
+                    </svg>
+                    Horários
+                </button>
+                <button class="navegacao__item" data-aba="calendarioEscolar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2"/>
+                        <path d="M3 10h18M8 3v4M16 3v4"/>
+                        <path d="M8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01"/>
+                    </svg>
+                    Calendário Escolar
+                </button>
+
+                <span class="lateral__grupo">Configuração</span>
+
+                <button class="navegacao__item" data-aba="regras">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path d="M12 3l7 4v5c0 4-3 7.5-7 9-4-1.5-7-5-7-9V7z"/>
+                        <path d="M9.5 12l1.8 1.8L15 10"/>
+                    </svg>
+                    Regras
+                </button>
+                <button class="navegacao__item" data-aba="relatorio">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>
+                    </svg>
+                    Relatórios
+                </button>
+                <button class="navegacao__item" data-aba="conta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
+                    </svg>
+                    Conta
+                </button>
+            </nav>
+
+            <div class="lateral__rodape">
+                <div class="usuario">
+                    <div class="avatar" id="avatarGestor">GL</div>
+                    <div class="usuario__dados">
+                        <strong id="nomeGestor">Gestor Local</strong>
+                        <span id="usuarioGestor"></span>
+                    </div>
+                </div>
+                <button class="botao botao--vazio botao--pequeno botao--largo acao-sair">
+                    Sair da conta
+                </button>
+            </div>
+        </aside>
+
+        <!-- ---------- ÁREA DE CONTEÚDO ---------- -->
+        <div class="area">
+            <header class="topo">
+                <div>
+                    <!-- Só a escola: o nome da tela já é o título do conteúdo, logo
+                         abaixo, e repeti-lo aqui era redundante. -->
+                    <span class="topo__migalha" id="migalhaTopo">Gestão local</span>
+                </div>
+                <div class="topo__direita">
+                    <!-- só o gerente geral troca de escola; o gestor fica na dele -->
+                    <select id="seletorFoco" class="seletor-foco oculto"
+                            aria-label="Unidade em foco"></select>
+                    <span class="topo__data" id="dataHoje"></span>
+                    <button class="botao botao--vazio botao--pequeno acao-sair so-tela-pequena">
+                        Sair
+                    </button>
+                    <button type="button" class="avatar avatar--pequeno avatar--botao"
+                            id="avatarTopo" data-ir-para-conta
+                            aria-label="Abrir minha conta" title="Conta">GL</button>
+                </div>
+            </header>
+
+            <main class="pagina">
+
+                <!-- ---------- GRADES DE AULAS ---------- -->
+                <section id="abaGrades" class="aba">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Grades de Aulas</h1>
+                            <p>Visão geral da semana: todos os professores, turmas, disciplinas
+                               e salas em cada dia e horário. Clique em uma aula para editar a
+                               grade daquele professor. No celular, escolha um professor ou uma
+                               turma para ver o horário dia a dia.</p>
+                        </div>
+                    </div>
+                    <div class="cartao">
+                        <div class="navegacao-semana">
+                            <button class="botao botao--vazio botao--pequeno"
+                                    type="button" id="semanaAnterior">← Semana anterior</button>
+                            <div class="navegacao-semana__rotulo">
+                                <strong id="rotuloSemana">—</strong>
+                                <button class="botao-texto oculto" type="button"
+                                        id="voltarSemanaAtual">Voltar para esta semana</button>
+                            </div>
+                            <button class="botao botao--vazio botao--pequeno"
+                                    type="button" id="semanaSeguinte">Próxima semana →</button>
+                        </div>
+                        <!-- No celular a escola inteira nao cabe numa tela: a grade
+                             sai de um professor (ou de uma turma) de cada vez, um dia
+                             de cada vez. No computador o CSS esconde os dois seletores
+                             e volta a semana toda, com todo mundo. -->
+                        <div class="filtro-grade" id="filtroGradeMobile">
+                            <label for="focoDaGrade">Ver o horário de</label>
+                            <select id="focoDaGrade"></select>
+                        </div>
+                        <div class="seletor-dias" id="seletorDiasGrade"></div>
+                        <div id="gradeEscola" class="grade" style="--colunas:5"></div>
+                        <div id="vazioGradeEscola"></div>
+                    </div>
+                </section>
+
+                <!-- ---------- SALAS DE AULA ---------- -->
+                <section id="abaSalas" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Salas de Aula</h1>
+                            <p>Salas comuns, onde a turma tem aula todo dia. Não se confundem
+                               com os laboratórios: laboratório o professor reserva aula a
+                               aula, sala o gestor define na grade de aulas.</p>
+                        </div>
+                    </div>
+                    <div class="cartao">
+                        <form id="formSala">
+                            <div class="linha-campos linha-campos--2">
+                                <div class="campo">
+                                    <label for="salaNome">Nome</label>
+                                    <input type="text" id="salaNome" maxlength="60"
+                                           placeholder="ex.: Sala 13" required>
+                                </div>
+                                <div class="campo">
+                                    <label for="salaCapacidade">Lugares</label>
+                                    <input type="number" id="salaCapacidade"
+                                           min="1" max="200" value="35">
+                                </div>
+                            </div>
+                            <button class="botao botao--pequeno" type="submit">
+                                + Adicionar sala
+                            </button>
+                        </form>
+                        <div class="divisor"></div>
+                        <div id="listaSalas"></div>
+                    </div>
+                </section>
+
+                <!-- ---------- LABORATÓRIOS ---------- -->
+                <section id="abaLaboratorios" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Laboratórios</h1>
+                            <p>Cadastre, edite ou exclua as salas de laboratório da escola.</p>
+                        </div>
+                        <button class="botao" id="botaoNovoLaboratorio">+ Novo laboratório</button>
+                    </div>
+                    <div class="cartao">
+                        <div class="tabela-envolvida">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Laboratório</th>
+                                        <th>Tipo</th>
+                                        <th>Capacidade</th>
+                                        <th>Responsável</th>
+                                        <th>Situação</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="corpoLaboratorios"></tbody>
+                            </table>
+                        </div>
+                        <div id="vazioLaboratorios"></div>
+                    </div>
+                </section>
+
+                <!-- ---------- PROFESSORES ---------- -->
+                <section id="abaProfessores" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Professores</h1>
+                            <p>A matrícula cadastrada aqui é o que o professor usa para entrar
+                               no sistema.</p>
+                        </div>
+                        <button class="botao" id="botaoNovoProfessor">+ Novo professor</button>
+                    </div>
+                    <div class="cartao">
+                        <div class="busca">
+                            <svg class="busca__icone" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7"/>
+                                <path d="M20.5 20.5 16 16"/>
+                            </svg>
+                            <input type="search" id="buscaProfessor"
+                                   aria-label="Buscar professor"
+                                   placeholder="Buscar por nome, matrícula, e-mail ou telefone">
+                        </div>
+                        <p class="busca__contagem" id="contagemProfessores"></p>
+
+                        <div class="tabela-envolvida">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Professor</th>
+                                        <th>Matrícula</th>
+                                        <th>E-mail</th>
+                                        <th>Telefone</th>
+                                        <th>Disciplina</th>
+                                        <th>Reservas</th>
+                                        <th>Situação</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="corpoProfessores"></tbody>
+                            </table>
+                        </div>
+                        <div id="vazioProfessores"></div>
+                    </div>
+                </section>
+
+                <!-- ---------- ALUNOS ---------- -->
+                <section id="abaAlunos" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Alunos</h1>
+                            <p>A lista de cada turma. É dela que o professor puxa os nomes
+                               na hora de distribuir a turma pelos computadores do
+                               laboratório — sem cadastro, ele teria de digitar tudo
+                               toda aula. A <strong>matrícula</strong> é o que ele digita
+                               no laboratório de projetos, onde o grupo mistura turmas.
+                               Aluno não entra no sistema: não tem senha.</p>
+                        </div>
+                        <div class="barra-botoes">
+                            <button class="botao botao--vazio" id="botaoImportarAlunos">
+                                Importar turma
+                            </button>
+                            <button class="botao" id="botaoNovoAluno">+ Novo aluno</button>
+                            <button class="botao" id="botaoNovaTurma">+ Criar turma</button>
+                            <button class="botao botao--vazio" id="botaoExcluirTurma">
+                                Excluir turma
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="indicadores" id="indicadoresAlunos"></div>
+
+                    <div class="cartao">
+                        <div class="linha-campos linha-campos--2">
+                            <div class="campo">
+                                <label for="filtroTurmaAlunos">Turma</label>
+                                <select id="filtroTurmaAlunos">
+                                    <option value="">Todas as turmas</option>
+                                </select>
+                            </div>
+                            <div class="campo">
+                                <label for="buscaAluno">Buscar</label>
+                                <div class="busca" style="margin:0">
+                                    <svg class="busca__icone" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" aria-hidden="true">
+                                        <circle cx="11" cy="11" r="7"/>
+                                        <path d="M20.5 20.5 16 16"/>
+                                    </svg>
+                                    <input type="search" id="buscaAluno"
+                                           placeholder="Buscar por nome, matrícula ou turma">
+                                </div>
+                            </div>
+                        </div>
+                        <p class="busca__contagem" id="contagemAlunos"></p>
+
+                        <div class="tabela-envolvida">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Aluno</th>
+                                        <th>Matrícula</th>
+                                        <th>Nº</th>
+                                        <th>Turma</th>
+                                        <th>Situação</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="corpoAlunos"></tbody>
+                            </table>
+                        </div>
+                        <div id="vazioAlunos"></div>
+                    </div>
+                </section>
+
+                <!-- ---------- OUTROS GESTORES ---------- -->
+                <section id="abaGestores" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Outros gestores</h1>
+                            <p>Gestores que administram esta escola junto com você. Dá para
+                               criar um do zero ou promover um professor já cadastrado —
+                               o formulário já vem com nome e e-mail preenchidos.</p>
+                        </div>
+                        <button class="botao" id="botaoNovoGestor">+ Novo gestor</button>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="busca">
+                            <svg class="busca__icone" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7"/>
+                                <path d="M20.5 20.5 16 16"/>
+                            </svg>
+                            <input type="search" id="buscaGestor"
+                                   aria-label="Buscar gestor"
+                                   placeholder="Buscar por nome, usuário, e-mail ou telefone">
+                        </div>
+                        <p class="busca__contagem" id="contagemGestores"></p>
+
+                        <div class="tabela-envolvida">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Gestor</th>
+                                        <th>Usuário</th>
+                                        <th>E-mail</th>
+                                        <th>Telefone</th>
+                                        <th>Último acesso</th>
+                                        <th>Situação</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="corpoGestores"></tbody>
+                            </table>
+                        </div>
+                        <div id="vazioGestores"></div>
+                    </div>
+                </section>
+
+                <!-- ---------- RESERVAS ---------- -->
+                <section id="abaReservas" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Reservas de Laboratórios</h1>
+                            <p>Acompanhe, marque presença/falta ou cancele reservas.</p>
+                        </div>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="linha-campos linha-campos--3">
+                            <div class="campo">
+                                <label for="filtroLaboratorio">Laboratório</label>
+                                <select id="filtroLaboratorio"><option value="">Todos</option></select>
+                            </div>
+                            <div class="campo">
+                                <label for="filtroStatus">Situação</label>
+                                <select id="filtroStatus">
+                                    <option value="">Todas</option>
+                                    <option value="ativa">Ativa</option>
+                                    <option value="realizada">Realizada</option>
+                                    <option value="falta">Falta</option>
+                                    <option value="cancelada">Cancelada</option>
+                                </select>
+                            </div>
+                            <div class="campo">
+                                <label for="filtroDe">A partir de</label>
+                                <input type="date" id="filtroDe">
+                            </div>
+                        </div>
+                        <div class="barra-botoes">
+                            <button class="botao botao--pequeno" id="botaoFiltrar">Filtrar</button>
+                            <button class="botao botao--pequeno botao--vazio" id="botaoLimparFiltro">
+                                Limpar filtros
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="listaReservas"></div>
+                </section>
+
+                <!-- ---------- PROJETOS NO INTERVALO ---------- -->
+                <section id="abaProjetos" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Projetos no Intervalo</h1>
+                            <p>O laboratório reservado no intervalo de uma hora que vem
+                               depois da 5ª aula. Cada reserva ocupa 50 minutos dele, tem
+                               um professor responsável e um nome — que nasce como
+                               <strong>Elaboração de Projetos</strong> e pode virar o nome
+                               do evento. Quem registra os computadores é o responsável,
+                               na tela dele.</p>
+                        </div>
+                        <button class="botao" id="botaoNovoProjeto">+ Nova reserva</button>
+                    </div>
+
+                    <div id="projetoJanelaGestor" class="janela-intervalo"></div>
+
+                    <div class="indicadores" id="indicadoresProjetos"></div>
+
+                    <div class="cartao">
+                        <div class="linha-campos linha-campos--3">
+                            <div class="campo">
+                                <label for="projetoDe">De</label>
+                                <input type="date" id="projetoDe">
+                            </div>
+                            <div class="campo">
+                                <label for="projetoAte">Até</label>
+                                <input type="date" id="projetoAte">
+                            </div>
+                            <div class="campo">
+                                <label for="projetoFiltroProfessor">Professor responsável</label>
+                                <select id="projetoFiltroProfessor">
+                                    <option value="">Todos</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="linha-campos linha-campos--2">
+                            <div class="campo">
+                                <label for="projetoFiltroLaboratorio">Laboratório</label>
+                                <select id="projetoFiltroLaboratorio">
+                                    <option value="">Todos</option>
+                                </select>
+                            </div>
+                            <div class="campo">
+                                <label for="projetoFiltroStatus">Situação</label>
+                                <select id="projetoFiltroStatus">
+                                    <option value="">Todas</option>
+                                    <option value="ativa">Ativa</option>
+                                    <option value="realizada">Realizada</option>
+                                    <option value="falta">Falta</option>
+                                    <option value="cancelada">Cancelada</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="barra-botoes">
+                            <button class="botao botao--pequeno" id="botaoFiltrarProjetos">
+                                Filtrar
+                            </button>
+                            <button class="botao botao--pequeno botao--vazio"
+                                    id="botaoLimparProjetos">Limpar filtros</button>
+                        </div>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="tabela-envolvida">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Data / hora</th>
+                                        <th>Projeto</th>
+                                        <th>Responsável</th>
+                                        <th>Laboratório</th>
+                                        <th>Computadores</th>
+                                        <th>Situação</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="corpoProjetos"></tbody>
+                            </table>
+                        </div>
+                        <div id="vazioProjetos"></div>
+                    </div>
+                </section>
+
+                <!-- ---------- USO DE COMPUTADORES ---------- -->
+                <section id="abaComputadores" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Uso de Computadores</h1>
+                            <p>O histórico do laboratório: cada aula — e cada projeto do
+                               intervalo — que um professor registrou, com a turma, a data
+                               e quem sentou em qual máquina. Clique em uma linha para ver
+                               a alocação computador a computador.</p>
+                        </div>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="linha-campos linha-campos--3">
+                            <div class="campo">
+                                <label for="usoDe">De</label>
+                                <input type="date" id="usoDe">
+                            </div>
+                            <div class="campo">
+                                <label for="usoAte">Até</label>
+                                <input type="date" id="usoAte">
+                            </div>
+                            <div class="campo">
+                                <label for="usoProfessor">Professor</label>
+                                <select id="usoProfessor"><option value="">Todos</option></select>
+                            </div>
+                        </div>
+                        <div class="linha-campos linha-campos--3">
+                            <div class="campo">
+                                <label for="usoTurma">Turma</label>
+                                <select id="usoTurma"><option value="">Todas</option></select>
+                            </div>
+                            <div class="campo">
+                                <label for="usoLaboratorio">Laboratório</label>
+                                <select id="usoLaboratorio"><option value="">Todos</option></select>
+                            </div>
+                            <div class="campo">
+                                <label for="usoOrigem">Origem</label>
+                                <select id="usoOrigem">
+                                    <option value="">Aulas e projetos</option>
+                                    <option value="aula">Só aulas da grade</option>
+                                    <option value="projeto">Só projetos do intervalo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="barra-botoes">
+                            <button class="botao botao--pequeno" id="botaoFiltrarUso">Filtrar</button>
+                            <button class="botao botao--pequeno botao--vazio" id="botaoLimparUso">
+                                Limpar filtros
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="indicadores" id="indicadoresUso"></div>
+
+                    <div class="cartao">
+                        <div class="tabela-envolvida">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Data / hora</th>
+                                        <th>Professor</th>
+                                        <th>Turma</th>
+                                        <th>Laboratório</th>
+                                        <th>Computadores</th>
+                                        <th>Alunos</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="corpoUso"></tbody>
+                            </table>
+                        </div>
+                        <div id="vazioUso"></div>
+                    </div>
+                </section>
+
+                <!-- ---------- HORÁRIOS E CALENDÁRIO ---------- -->
+                <section id="abaCalendario" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Horários e calendário</h1>
+                            <p>Horário das aulas da escola, visibilidade da grade e
+                               datas bloqueadas (feriados, recessos, manutenção).</p>
+                        </div>
+                    </div>
+
+                    <!-- no celular os cartoes viram abas; no computador
+                         ficam lado a lado e este seletor some -->
+                    <div class="sub-abas" id="subAbasCalendario">
+                        <button class="sub-abas__item sub-abas__item--ativo"
+                                type="button" data-painel="grade">Horário das aulas</button>
+                        <button class="sub-abas__item"
+                                type="button" data-painel="bloqueios">Datas bloqueadas</button>
+                    </div>
+
+                    <div class="grade-cartoes">
+                        <div class="cartao painel-aba painel-aba--ativo" data-painel="grade">
+                            <div class="cartao__topo"><h3>Horário das aulas</h3></div>
+                            <p class="dica">São os horários das aulas da escola. Valem ao mesmo
+                               tempo para a grade dos professores e para a reserva dos
+                               laboratórios — mudar um horário aqui muda os dois.</p>
+                            <form id="formHorario">
+                                <div class="linha-campos linha-campos--3">
+                                    <div class="campo">
+                                        <label for="horarioTurno">Turno</label>
+                                        <select id="horarioTurno">
+                                            <option value="manha">Manhã</option>
+                                            <option value="tarde">Tarde</option>
+                                            <option value="noite">Noite</option>
+                                        </select>
+                                    </div>
+                                    <div class="campo">
+                                        <label for="horarioInicio">Início</label>
+                                        <input type="time" id="horarioInicio" required>
+                                    </div>
+                                    <div class="campo">
+                                        <label for="horarioFim">Fim</label>
+                                        <input type="time" id="horarioFim" required>
+                                    </div>
+                                </div>
+                                <button class="botao botao--pequeno" type="submit">
+                                    + Adicionar aula
+                                </button>
+                            </form>
+                            <div class="divisor"></div>
+                            <div id="listaHorariosAdmin"></div>
+
+                            <div class="divisor"></div>
+                            <h3 style="margin-bottom:4px">Quem enxerga a grade</h3>
+                            <p class="dica">Cada professor sempre vê a própria grade. Marcando
+                               abaixo, todos passam a ver também a grade da escola inteira.
+                               Para tirar só uma pessoa dessa grade, use
+                               <strong>Professores &rsaquo; Grade de aulas</strong>.</p>
+                            <label class="checkbox">
+                                <input type="checkbox" id="cfgGradeVisivel">
+                                <span>Professores podem ver a grade da escola inteira</span>
+                            </label>
+                            <div id="listaOcultosGrade"></div>
+                        </div>
+
+                        <div class="cartao painel-aba" data-painel="bloqueios">
+                            <div class="cartao__topo"><h3>Datas bloqueadas</h3></div>
+                            <div id="listaBloqueios"></div>
+                            <div class="divisor"></div>
+                            <form id="formBloqueio">
+                                <div class="linha-campos linha-campos--2">
+                                    <div class="campo">
+                                        <label for="bloqueioInicio">De</label>
+                                        <input type="date" id="bloqueioInicio" required>
+                                    </div>
+                                    <div class="campo">
+                                        <label for="bloqueioFim">Até</label>
+                                        <input type="date" id="bloqueioFim">
+                                    </div>
+                                </div>
+                                <div class="campo">
+                                    <label for="bloqueioDescricao">Motivo</label>
+                                    <input type="text" id="bloqueioDescricao"
+                                           placeholder="ex.: Recesso escolar / Manutenção">
+                                </div>
+                                <div class="campo">
+                                    <label for="bloqueioLaboratorio">Alcance</label>
+                                    <select id="bloqueioLaboratorio">
+                                        <option value="">Toda a escola</option>
+                                    </select>
+                                </div>
+                                <button class="botao botao--pequeno" type="submit">
+                                    + Adicionar bloqueio
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ---------- CALENDÁRIO ESCOLAR (PDF) ---------- -->
+                <!-- Não confundir com a aba "Horários" (id abaCalendario), que cuida
+                     das datas bloqueadas. Esta guarda o PDF do ano letivo; o arquivo
+                     ativo e o leitor saem do calendario.js, o mesmo do professor. -->
+                <section id="abaCalendarioEscolar" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Calendário escolar</h1>
+                            <p>O PDF do calendário do ano letivo. Os professores da escola
+                               abrem pelo menu, no computador ou no celular. Enviar um
+                               arquivo novo substitui o anterior para todos.</p>
+                        </div>
+                    </div>
+
+                    <div id="calendarioArquivoAtivo"></div>
+
+                    <div class="cartao oculto" id="cartaoEnvioCalendario">
+                        <div class="cartao__topo">
+                            <h3 id="tituloEnvioCalendario">Enviar calendário</h3>
+                        </div>
+
+                        <!-- O campo fica fora da zona, e não dentro: a zona some quando
+                             o arquivo é escolhido, e o "Trocar arquivo" precisa continuar
+                             abrindo o seletor. Escondido só da vista, para o Tab chegar
+                             nele e o foco acender a zona (veja o CSS). -->
+                        <input type="file" id="arquivoCalendario" class="soltar-arquivo__campo"
+                               accept="application/pdf,.pdf">
+                        <label class="soltar-arquivo" id="soltarCalendario" for="arquivoCalendario">
+                            <svg class="soltar-arquivo__icone" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" aria-hidden="true">
+                                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+                                <path d="M14 3v5h5M12 18v-6M9.5 14.5 12 12l2.5 2.5"/>
+                            </svg>
+                            <span class="soltar-arquivo__arrastar">
+                                <strong>Arraste o PDF do calendário para cá</strong>
+                                <span>ou</span>
+                            </span>
+                            <span class="botao botao--grande soltar-arquivo__botao">
+                                Escolher arquivo PDF
+                            </span>
+                            <span class="soltar-arquivo__dica" id="dicaLimiteCalendario">
+                                Somente PDF, até 20 MB.
+                            </span>
+                        </label>
+
+                        <div class="arquivo-escolhido oculto" id="escolhidoCalendario"></div>
+
+                        <div class="progresso oculto" id="progressoCalendario" role="progressbar"
+                             aria-label="Envio do calendário" aria-valuemin="0"
+                             aria-valuemax="100" aria-valuenow="0">
+                            <div class="progresso__trilho"><div class="progresso__barra"></div></div>
+                            <span class="progresso__rotulo">0%</span>
+                        </div>
+
+                        <div id="avisoSubstituirCalendario" class="aviso aviso--atencao oculto"></div>
+                        <div id="erroCalendario" class="aviso aviso--erro oculto"></div>
+
+                        <div class="barra-botoes barra-botoes--envio">
+                            <button type="button" class="botao botao--grande oculto"
+                                    id="botaoEnviarCalendario">Publicar calendário</button>
+                            <button type="button" class="botao botao--vazio botao--grande oculto"
+                                    id="botaoCancelarCalendario">Cancelar</button>
+                        </div>
+                    </div>
+
+                    <div id="calendarioLeitor"></div>
+                </section>
+
+                <!-- ---------- REGRAS ---------- -->
+                <section id="abaRegras" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Regras do sistema</h1>
+                            <p>Ajuste as regras de reserva sem precisar mexer no código.</p>
+                        </div>
+                    </div>
+
+                    <form id="formConfig" class="cartao">
+                        <div class="linha-campos linha-campos--2">
+                            <div class="campo">
+                                <label for="cfgAntecedencia">
+                                    Antecedência máxima para reservar (dias)
+                                </label>
+                                <input type="number" id="cfgAntecedencia" min="1" max="365">
+                            </div>
+                            <div class="campo">
+                                <label for="cfgMaxAulas">Máximo de aulas seguidas por dia</label>
+                                <input type="number" id="cfgMaxAulas" min="1" max="12">
+                            </div>
+                        </div>
+
+                        <div class="linha-campos linha-campos--2">
+                            <div class="campo">
+                                <label for="cfgCancelamento">
+                                    Antecedência mínima para cancelar (horas)
+                                </label>
+                                <input type="number" id="cfgCancelamento" min="0" max="168">
+                            </div>
+                        </div>
+
+                        <div class="divisor"></div>
+                        <h3 style="margin-bottom:4px">Carência (o “X” do questionário)</h3>
+                        <p class="dica">Depois de usar o laboratório, o professor espera esse
+                            intervalo para reservar de novo.</p>
+
+                        <div class="linha-campos linha-campos--3">
+                            <div class="campo">
+                                <label for="cfgCarencia">Dias de carência</label>
+                                <input type="number" id="cfgCarencia" min="0" max="90">
+                            </div>
+                            <div class="campo">
+                                <label for="cfgEscopo">Alcance da carência</label>
+                                <select id="cfgEscopo">
+                                    <option value="laboratorio">Só o mesmo laboratório</option>
+                                    <option value="global">Todos os laboratórios</option>
+                                </select>
+                            </div>
+                            <div class="campo">
+                                <label for="cfgContagem">Contagem</label>
+                                <select id="cfgContagem">
+                                    <option value="0">Dias corridos</option>
+                                    <option value="1">Apenas dias letivos</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <label class="checkbox">
+                            <input type="checkbox" id="cfgFalta">
+                            <span>Faltar à aula reservada também gera carência</span>
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" id="cfgFimDeSemana">
+                            <span>Permitir reservas em sábados e domingos</span>
+                        </label>
+
+                        <div class="divisor"></div>
+                        <h3 style="margin-bottom:4px">Projetos no intervalo</h3>
+                        <p class="dica">O sistema descobre sozinho onde fica o intervalo:
+                            ele começa quando a aula indicada abaixo termina, segundo a
+                            grade de <em>Horários</em>. Aqui você diz qual é essa aula,
+                            quanto dura o intervalo e quanto da reserva ocupa dele.</p>
+
+                        <div class="linha-campos linha-campos--3">
+                            <div class="campo">
+                                <label for="cfgProjetoAula">O intervalo vem depois da aula</label>
+                                <input type="number" id="cfgProjetoAula" min="1" max="12">
+                            </div>
+                            <div class="campo">
+                                <label for="cfgProjetoIntervalo">Duração do intervalo (min)</label>
+                                <input type="number" id="cfgProjetoIntervalo" min="10" max="240">
+                            </div>
+                            <div class="campo">
+                                <label for="cfgProjetoDuracao">Duração da reserva (min)</label>
+                                <input type="number" id="cfgProjetoDuracao" min="10" max="240">
+                            </div>
+                        </div>
+                        <div class="campo">
+                            <label for="cfgProjetoNome">Nome que a reserva já vem preenchida</label>
+                            <input type="text" id="cfgProjetoNome" maxlength="120"
+                                   placeholder="Elaboração de Projetos">
+                        </div>
+                        <div id="avisoJanelaRegras" class="aviso aviso--info oculto"></div>
+
+                        <div id="erroConfig" class="aviso aviso--erro oculto"></div>
+                        <button class="botao" type="submit">Salvar regras</button>
+                    </form>
+
+                    <form id="formExcecaoAulas" class="cartao cartao--destaque">
+                        <div class="cartao__topo">
+                            <h3>Exceção de aulas seguidas por professor</h3>
+                        </div>
+                        <p class="dica">O limite acima vale para a escola inteira. Marque
+                           abaixo quem pode encadear mais aulas num mesmo dia e diga por
+                           quantos dias seguidos da semana essa folga vale — eles precisam
+                           ficar encostados (com 3 dias: segunda a quarta, terça a quinta
+                           ou quarta a sexta). Quem não estiver marcado segue o limite geral
+                           (<strong id="excecaoLimiteGeral">—</strong>).</p>
+                        <p class="dica"><strong>Atenção:</strong> quem entra nesta lista
+                           também fica <strong>dispensado da carência</strong> — não precisa
+                           esperar o intervalo entre um uso do laboratório e o seguinte.</p>
+
+                        <div class="linha-campos linha-campos--2">
+                            <div class="campo">
+                                <label for="excecaoMaxAulas">
+                                    Máximo de aulas seguidas para os selecionados
+                                </label>
+                                <select id="excecaoMaxAulas"></select>
+                            </div>
+                            <div class="campo">
+                                <label for="excecaoMaxDias">
+                                    Dias seguidos na semana em que a exceção vale
+                                </label>
+                                <select id="excecaoMaxDias"></select>
+                            </div>
+                        </div>
+
+                        <div class="busca">
+                            <svg class="busca__icone" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7"/>
+                                <path d="M20.5 20.5 16 16"/>
+                            </svg>
+                            <input type="search" id="buscaExcecaoProfessor"
+                                   aria-label="Buscar professor para a exceção"
+                                   placeholder="Buscar por nome ou matrícula">
+                        </div>
+
+                        <div class="barra-botoes barra-botoes--excecao">
+                            <span class="busca__contagem" id="contagemExcecao">
+                                Nenhum professor selecionado
+                            </span>
+                            <div class="barra-botoes">
+                                <button type="button" class="botao botao--pequeno botao--vazio"
+                                        id="botaoMarcarTodosExcecao">Marcar visíveis</button>
+                                <button type="button" class="botao botao--pequeno botao--vazio"
+                                        id="botaoLimparExcecao">Limpar seleção</button>
+                            </div>
+                        </div>
+
+                        <div id="listaExcecaoProfessores" class="lista-selecao"></div>
+
+                        <div id="erroExcecaoAulas" class="aviso aviso--erro oculto"></div>
+                        <button class="botao" type="submit">Salvar exceção</button>
+                    </form>
+
+                    <form id="formEnvio" class="cartao">
+                        <div class="cartao__topo">
+                            <h3>Envio de acesso aos professores</h3>
+                        </div>
+                        <p class="dica">O endereço abaixo vai na mensagem de credenciais.
+                            O e-mail só é enviado pelo sistema se o SMTP estiver preenchido —
+                            o botão do WhatsApp funciona sem nenhuma configuração.</p>
+
+                        <div class="campo">
+                            <label for="cfgEndereco">Endereço do sistema para os professores</label>
+                            <input type="text" id="cfgEndereco"
+                                   placeholder="ex.: http://192.168.0.10:5000">
+                        </div>
+
+                        <div class="linha-campos linha-campos--3">
+                            <div class="campo">
+                                <label for="cfgSmtpServidor">Servidor SMTP</label>
+                                <input type="text" id="cfgSmtpServidor"
+                                       placeholder="ex.: smtp.gmail.com">
+                            </div>
+                            <div class="campo">
+                                <label for="cfgSmtpPorta">Porta</label>
+                                <input type="number" id="cfgSmtpPorta" min="1" max="65535"
+                                       placeholder="587">
+                            </div>
+                            <div class="campo">
+                                <label for="cfgSmtpUsuario">Usuário</label>
+                                <input type="text" id="cfgSmtpUsuario"
+                                       placeholder="conta de envio">
+                            </div>
+                        </div>
+
+                        <div class="linha-campos linha-campos--2">
+                            <div class="campo">
+                                <label for="cfgSmtpRemetente">E-mail remetente</label>
+                                <input type="text" id="cfgSmtpRemetente"
+                                       placeholder="coordenacao@escola.edu.br">
+                            </div>
+                            <div class="campo">
+                                <label for="cfgSmtpSenha">
+                                    Senha do e-mail <span id="avisoSmtpSenha"
+                                    class="texto-suave"></span>
+                                </label>
+                                <input type="password" id="cfgSmtpSenha"
+                                       autocomplete="new-password"
+                                       placeholder="deixe em branco para manter">
+                            </div>
+                        </div>
+
+                        <label class="checkbox">
+                            <input type="checkbox" id="cfgSmtpTls">
+                            <span>Usar criptografia TLS (recomendado — porta 587)</span>
+                        </label>
+
+                        <div id="erroEnvio" class="aviso aviso--erro oculto"></div>
+                        <button class="botao" type="submit">Salvar envio de acesso</button>
+                    </form>
+                </section>
+
+                <!-- ---------- RELATÓRIO ---------- -->
+                <section id="abaRelatorio" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Relatórios de uso</h1>
+                            <p>Ocupação dos laboratórios e uso por professor no período escolhido.</p>
+                        </div>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="linha-campos linha-campos--3">
+                            <div class="campo">
+                                <label for="relDe">De</label>
+                                <input type="date" id="relDe">
+                            </div>
+                            <div class="campo">
+                                <label for="relAte">Até</label>
+                                <input type="date" id="relAte">
+                            </div>
+                            <div class="campo" style="justify-content:flex-end">
+                                <button class="botao" id="botaoGerarRelatorio" type="button">
+                                    Gerar relatório
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="conteudoRelatorio"></div>
+                </section>
+
+                <!-- ---------- CONTA ---------- -->
+                <section id="abaConta" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Minha conta</h1>
+                            <p>Os dados da escola e do seu cadastro são mantidos pelo gerente
+                               geral. Aqui você mantém o seu contato em dia.</p>
+                        </div>
+                    </div>
+
+                    <div id="avisoContaGestor" class="aviso aviso--info oculto"></div>
+
+                    <div id="conteudoContaGestor">
+                    <div class="cartao">
+                        <div class="cartao__topo"><h3>Escola</h3></div>
+                        <div class="ficha">
+                            <div class="ficha__item">
+                                <span class="rotulo-pequeno">Nome da escola</span>
+                                <strong id="contaEscolaNome">—</strong>
+                            </div>
+                            <div class="ficha__item">
+                                <span class="rotulo-pequeno">Cidade</span>
+                                <strong id="contaEscolaCidade">—</strong>
+                            </div>
+                            <div class="ficha__item">
+                                <span class="rotulo-pequeno">Endereço</span>
+                                <strong id="contaEscolaEndereco">—</strong>
+                            </div>
+                        </div>
+                        <p class="dica">Nome, cidade e endereço da escola são cadastrados pelo
+                           gerente geral, em <em>Unidades / Escolas</em>.</p>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="cartao__topo"><h3>Meus dados</h3></div>
+                        <div class="ficha">
+                            <div class="ficha__item">
+                                <span class="rotulo-pequeno">Nome do gestor</span>
+                                <strong id="contaGestorNome">—</strong>
+                            </div>
+                            <div class="ficha__item">
+                                <span class="rotulo-pequeno">Usuário de acesso</span>
+                                <strong class="mono" id="contaGestorUsuario">—</strong>
+                            </div>
+                        </div>
+                        <p class="dica">Se o nome estiver errado, peça a correção ao gerente
+                           geral — é ele que cria e edita as contas de gestor.</p>
+                    </div>
+
+                    <form id="formContatoGestor" class="cartao">
+                        <div class="cartao__topo"><h3>Contato</h3></div>
+                        <div class="linha-campos linha-campos--2">
+                            <div class="campo">
+                                <label for="contaGestorEmail">E-mail institucional</label>
+                                <input type="email" id="contaGestorEmail"
+                                       placeholder="nome@escola.edu.br">
+                            </div>
+                            <div class="campo">
+                                <label for="contaGestorTelefone">WhatsApp (com DDD)</label>
+                                <input type="text" id="contaGestorTelefone" class="mono"
+                                       inputmode="numeric"
+                                       placeholder="(81)9 8458-7555">
+                            </div>
+                        </div>
+                        <p class="dica">O e-mail também serve para entrar no sistema,
+                           no lugar do usuário.</p>
+                        <div id="erroContatoGestor" class="aviso aviso--erro oculto"></div>
+                        <button class="botao" type="submit">Salvar contato</button>
+                    </form>
+
+                    <form id="formSenhaGestor" class="cartao">
+                        <div class="cartao__topo"><h3>Senha</h3></div>
+                        <div class="campo">
+                            <label for="senhaAtualGestor">Senha atual</label>
+                            <input type="password" id="senhaAtualGestor" data-olho
+                                   autocomplete="current-password" required>
+                        </div>
+                        <div class="campo">
+                            <label for="senhaNovaGestor">Nova senha</label>
+                            <input type="password" id="senhaNovaGestor" data-olho
+                                   autocomplete="new-password"
+                                   placeholder="mínimo 6 caracteres" required>
+                        </div>
+                        <div class="campo">
+                            <label for="senhaConfirmaGestor">Repita a nova senha</label>
+                            <input type="password" id="senhaConfirmaGestor" data-olho
+                                   autocomplete="new-password" required>
+                        </div>
+                        <div id="erroSenhaGestor" class="aviso aviso--erro oculto"></div>
+                        <button class="botao" type="submit">Trocar senha</button>
+                    </form>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</div>
+
+<div id="areaModal"></div>
+<div class="notificacoes" id="notificacoes"></div>
+
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/calendario.js') }}"></script>
+<script src="{{ url_for('static', filename='js/gestor.js') }}"></script>
+{% if bloquear_atalhos %}
+<script src="{{ url_for('static', filename='js/bloqueio.js') }}"></script>
+{% endif %}
+</body>
+</html>

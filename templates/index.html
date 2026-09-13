@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#111527">
+    <title>Reserva de Laboratórios — {{ escola }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+    <link rel="icon" type="image/png"
+          href="{{ url_for('static', filename='img/logomelhorada.png') }}">
+</head>
+<body data-inatividade="{{ minutos_inatividade }}">
+
+<!-- =================== TELA DE LOGIN =================== -->
+<div id="telaLogin" class="tela-login oculto">
+    <div class="login">
+        <div class="orgao"{% if cor_faixa %} style="background: {{ cor_faixa }}"{% endif %}>
+            {% if brasao_gov %}
+            <img class="orgao__brasao" src="{{ url_for('static', filename=brasao_gov) }}"
+                 alt="Escola Técnica Estadual José Nivaldo Pereira Ramos">
+            {% else %}
+            <span class="orgao__selo" aria-hidden="true">ETE</span>
+            {% endif %}
+        </div>
+        <div class="login__lado">
+            <div class="login__marca">
+                <span>Gestão de Aulas e Laboratórios</span>
+                <span class="login__marca-sub">Área do Professor</span>
+            </div>
+            <div>
+                <h1>Bem-vindo de volta</h1>
+                <p>Reserve o laboratório da sua próxima aula em poucos toques,
+                   pelo computador ou pelo celular.</p>
+            </div>
+            <ul class="login__itens">
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg>
+                    Agenda semanal de todos os laboratórios
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg>
+                    Regras de prioridade e carência automáticas
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg>
+                    Histórico completo das suas aulas
+                </li>
+            </ul>
+        </div>
+
+        <div class="login__form">
+            <div class="login__topo-mobile">
+                <strong>Gestão de Aulas e Laboratórios</strong>
+                <span class="login__marca-sub">Área do Professor</span>
+            </div>
+            <h2>Entrar no sistema</h2>
+
+            <form id="formLogin">
+                <div class="campo">
+                    <label for="identificador">Matrícula ou e-mail institucional</label>
+                    <input type="text" id="identificador" name="identificador"
+                           autocomplete="username" placeholder="ex.: 1001" required>
+                </div>
+                <div class="campo">
+                    <label for="senhaProfessor">Senha</label>
+                    <input type="password" id="senhaProfessor" name="senha" data-olho
+                           autocomplete="current-password"
+                           placeholder="a senha enviada pela coordenação" required>
+                </div>
+                <div id="erroLogin" class="aviso aviso--erro oculto"></div>
+                <button type="submit" class="botao botao--largo">Entrar</button>
+            </form>
+
+            <div class="rodape-login">
+                Esqueceu a senha ou ainda não recebeu? Fale com a coordenação.
+
+                <span class="rodape-login__titulo">Outros acessos</span>
+                <div class="acessos">
+                    <a class="acesso" href="/gestor">
+                        <span class="acesso__texto">
+                            <strong>Gestor Local</strong>
+                            <span>Painel da escola</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =================== APLICAÇÃO =================== -->
+<div id="app" class="oculto">
+    <div class="painel">
+
+        <!-- ---------- MENU LATERAL ---------- -->
+        <aside class="lateral">
+            <div class="lateral__marca">
+                <div>
+                    <strong>Gestão de Aulas e Laboratórios</strong>
+                    <span>{{ escola }}</span>
+                </div>
+            </div>
+
+            <nav class="lateral__menu" aria-label="Seções">
+                <span class="lateral__grupo">Menu principal</span>
+
+                <button class="navegacao__item ativo" data-aba="agenda" data-principal>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2"/>
+                        <path d="M3 10h18M8 3v4M16 3v4"/>
+                    </svg>
+                    <span class="navegacao__rotulo">Agenda</span>
+                    <span class="navegacao__rotulo-curto">Agenda</span>
+                </button>
+
+                <!-- Submenus: a caixa de marcar guarda o estado aberto/fechado e
+                     o CSS faz o resto. O rótulo é o <label> dela, então clicar
+                     no cabeçalho abre e fecha sem uma linha de JavaScript. -->
+                <div class="navegacao__grupo">
+                    <input type="checkbox" class="navegacao__gatilho" id="grupoReservas" checked>
+                    <label class="navegacao__pai" for="grupoReservas">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                            <rect x="8.5" y="2.5" width="7" height="4" rx="1.2"/>
+                            <path d="M8.5 4.5H7A1.5 1.5 0 0 0 5.5 6v13A1.5 1.5 0 0 0 7 20.5h10a1.5
+                                     1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-1.5"/>
+                            <path d="M9 12h6M9 16h4"/>
+                        </svg>
+                        <span class="navegacao__pai-rotulo">Reservas</span>
+                        <svg class="navegacao__seta" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" aria-hidden="true">
+                            <path d="m6 9 6 6 6-6"/>
+                        </svg>
+                    </label>
+                    <div class="navegacao__sub">
+                        <button class="navegacao__item navegacao__item--filho" data-aba="reservar"
+                                id="botaoAbaReservar" data-principal>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9"/>
+                                <path d="M12 8v8M8 12h8"/>
+                            </svg>
+                            <span class="navegacao__rotulo">Nova reserva</span>
+                            <span class="navegacao__rotulo-curto">Reservar</span>
+                        </button>
+                        <button class="navegacao__item navegacao__item--filho" data-aba="minhas"
+                                data-principal>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                <path d="M9 11l3 3 5-6"/>
+                                <rect x="3" y="4" width="18" height="17" rx="2"/>
+                            </svg>
+                            <span class="navegacao__rotulo">Minhas aulas</span>
+                            <span class="navegacao__rotulo-curto">Aulas</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="navegacao__grupo">
+                    <input type="checkbox" class="navegacao__gatilho" id="grupoRecursos" checked>
+                    <label class="navegacao__pai" for="grupoRecursos">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                            <path d="M12 3 3 7.5l9 4.5 9-4.5z"/>
+                            <path d="m3 12.5 9 4.5 9-4.5"/>
+                            <path d="m3 16.8 9 4.5 9-4.5"/>
+                        </svg>
+                        <span class="navegacao__pai-rotulo">Recursos</span>
+                        <svg class="navegacao__seta" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" aria-hidden="true">
+                            <path d="m6 9 6 6 6-6"/>
+                        </svg>
+                    </label>
+                    <div class="navegacao__sub">
+                        <button class="navegacao__item navegacao__item--filho" data-aba="computadores">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                <rect x="2.5" y="4" width="19" height="12" rx="2"/>
+                                <path d="M8 20h8M10.5 16l-.5 4M13.5 16l.5 4"/>
+                            </svg>
+                            Computadores
+                        </button>
+                        <button class="navegacao__item navegacao__item--filho" data-aba="projetos"
+                                id="botaoAbaProjetos">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                <path d="M12 3.5 4 7.5v9l8 4 8-4v-9z"/>
+                                <path d="M4 7.5l8 4 8-4M12 11.5v9"/>
+                            </svg>
+                            <span class="navegacao__rotulo">Projetos no intervalo</span>
+                            <span class="navegacao__rotulo-curto">Projetos</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="navegacao__grupo">
+                    <input type="checkbox" class="navegacao__gatilho" id="grupoInformacoes" checked>
+                    <label class="navegacao__pai" for="grupoInformacoes">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M12 11.2v5M12 7.8h.01"/>
+                        </svg>
+                        <span class="navegacao__pai-rotulo">Informações</span>
+                        <svg class="navegacao__seta" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" aria-hidden="true">
+                            <path d="m6 9 6 6 6-6"/>
+                        </svg>
+                    </label>
+                    <div class="navegacao__sub">
+                        <button class="navegacao__item navegacao__item--filho" data-aba="horario"
+                                data-principal>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9"/>
+                                <path d="M12 7v5l3 2"/>
+                            </svg>
+                            <span class="navegacao__rotulo">Meu horário</span>
+                            <span class="navegacao__rotulo-curto">Horário</span>
+                        </button>
+                        <button class="navegacao__item navegacao__item--filho"
+                                data-aba="calendarioEscolar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                <rect x="3" y="5" width="18" height="16" rx="2"/>
+                                <path d="M3 10h18M8 3v4M16 3v4"/>
+                                <path d="M8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01"/>
+                            </svg>
+                            Calendário Escolar
+                        </button>
+                        <button class="navegacao__item navegacao__item--filho" data-aba="regras">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                <path d="M12 3l7 4v5c0 4-3 7.5-7 9-4-1.5-7-5-7-9V7z"/>
+                                <path d="M12 11v4M12 8h.01"/>
+                            </svg>
+                            Regras
+                        </button>
+                        <button class="navegacao__item navegacao__item--filho" data-aba="relatorio">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                <path d="M4 20h16"/>
+                                <path d="M7 20v-6M12 20V7M17 20v-9"/>
+                            </svg>
+                            Relatório
+                        </button>
+                    </div>
+                </div>
+
+                <button class="navegacao__item" data-aba="conta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
+                    </svg>
+                    Conta
+                </button>
+            </nav>
+
+            <div class="lateral__rodape">
+                <div class="usuario">
+                    <div class="avatar" id="avatarProfessor">--</div>
+                    <div class="usuario__dados">
+                        <strong id="nomeProfessor">—</strong>
+                        <span id="disciplinaProfessor"></span>
+                    </div>
+                </div>
+                <button class="botao botao--vazio botao--pequeno botao--largo acao-sair">
+                    Sair da conta
+                </button>
+            </div>
+        </aside>
+
+        <!-- ---------- ÁREA DE CONTEÚDO ---------- -->
+        <div class="area">
+            <header class="topo">
+                <div>
+                    <span class="topo__migalha">Reserva de Laboratórios</span>
+                </div>
+                <div class="topo__direita">
+                    <span class="topo__data" id="dataHoje"></span>
+                    <button class="botao botao--vazio botao--pequeno acao-sair so-tela-pequena">
+                        Sair
+                    </button>
+                    <button type="button" class="avatar avatar--pequeno avatar--botao"
+                            id="avatarTopo" data-ir-para-conta
+                            aria-label="Abrir minha conta" title="Minha conta">--</button>
+                </div>
+            </header>
+
+            <main class="pagina">
+
+                <!-- ---------- AGENDA ---------- -->
+                <section id="abaAgenda" class="aba">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Agenda semanal</h1>
+                            <p>Clique em um horário livre para reservar. Os horários com
+                               nome já estão ocupados por outro professor.</p>
+                        </div>
+                    </div>
+
+                    <div class="barra-agenda">
+                        <select id="seletorLaboratorio" aria-label="Laboratório"></select>
+                        <div class="navegador-semana">
+                            <button class="botao-icone" id="semanaAnterior"
+                                    aria-label="Semana anterior">‹</button>
+                            <span class="navegador-semana__texto" id="rotuloSemana">—</span>
+                            <button class="botao-icone" id="semanaSeguinte"
+                                    aria-label="Próxima semana">›</button>
+                        </div>
+                    </div>
+
+                    <div id="avisoCarencia" class="aviso aviso--atencao oculto"></div>
+
+                    <div class="seletor-dias" id="seletorDias"></div>
+
+                    <div id="conteudoGrade">
+                        <div class="lista-vazia"><span class="carregando"></span></div>
+                    </div>
+
+                    <div class="legenda">
+                        <span><i class="amostra-livre"></i> Livre</span>
+                        <span><i class="amostra-ocupada"></i> Ocupado</span>
+                        <span><i class="amostra-minha"></i> Minha reserva</span>
+                        <span><i class="amostra-bloqueada"></i> Indisponível</span>
+                    </div>
+                </section>
+
+                <!-- ---------- NOVA RESERVA ---------- -->
+                <section id="abaReservar" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Nova reserva</h1>
+                            <p>Escolha o laboratório, a data e as aulas seguidas que você precisa.</p>
+                        </div>
+                    </div>
+
+                    <div class="cartao cartao--destaque">
+                        <div id="avisoAdministra" class="aviso aviso--info oculto"></div>
+                        <form id="formReserva">
+                            <div class="linha-campos linha-campos--2">
+                                <div class="campo">
+                                    <label for="reservaLaboratorio">Laboratório</label>
+                                    <select id="reservaLaboratorio" required></select>
+                                </div>
+                                <div class="campo">
+                                    <label for="reservaData">Data da aula</label>
+                                    <input type="date" id="reservaData" required>
+                                </div>
+                            </div>
+
+                            <div id="infoLaboratorio" class="aviso aviso--info oculto"></div>
+
+                            <div class="campo">
+                                <label>Horários (selecione aulas seguidas)</label>
+                                <div id="listaHorarios" class="grade-horarios">
+                                    <div class="lista-vazia">Escolha um laboratório e uma data.</div>
+                                </div>
+                            </div>
+
+                            <div class="divisor"></div>
+
+                            <div class="linha-campos linha-campos--2">
+                                <div class="campo">
+                                    <label for="reservaDisciplina">Disciplina / matéria</label>
+                                    <input type="text" id="reservaDisciplina" required
+                                           placeholder="ex.: Biologia — 9º ano B">
+                                </div>
+                                <div class="campo">
+                                    <label for="reservaTipo">Tipo de aula</label>
+                                    <select id="reservaTipo" required></select>
+                                </div>
+                            </div>
+
+                            <div class="linha-campos linha-campos--2">
+                                <div class="campo">
+                                    <label for="reservaAlunos">Quantidade de alunos</label>
+                                    <input type="number" id="reservaAlunos" min="1" max="200"
+                                           placeholder="ex.: 28">
+                                </div>
+                                <div class="campo">
+                                    <label for="reservaObservacao">Observação (opcional)</label>
+                                    <input type="text" id="reservaObservacao"
+                                           placeholder="ex.: preciso do projetor">
+                                </div>
+                            </div>
+
+                            <div id="erroReserva" class="aviso aviso--erro oculto"></div>
+
+                            <div class="barra-botoes">
+                                <button type="submit" class="botao" id="botaoConfirmar">
+                                    Confirmar reserva
+                                </button>
+                                <button type="button" class="botao botao--vazio"
+                                        id="botaoLimpar">Limpar</button>
+                                <span class="texto-suave" id="resumoSelecao"></span>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- ---------- MINHAS RESERVAS ---------- -->
+                <section id="abaMinhas" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Minhas aulas</h1>
+                            <p>Suas reservas futuras e o histórico do que já aconteceu.</p>
+                        </div>
+                        <button class="botao botao--vazio botao--pequeno" id="botaoAtualizarMinhas">
+                            Atualizar
+                        </button>
+                    </div>
+
+                    <div class="indicadores" id="indicadoresProfessor"></div>
+
+                    <h3 class="rotulo-pequeno" style="margin-bottom:10px">Próximas aulas</h3>
+                    <div id="listaProximas"></div>
+
+                    <h3 class="rotulo-pequeno" style="margin:24px 0 10px">Histórico</h3>
+                    <div id="listaHistorico"></div>
+                </section>
+
+                <!-- ---------- COMPUTADORES DA AULA ---------- -->
+                <section id="abaComputadores" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Computadores da aula</h1>
+                            <p>Escolha a aula, distribua a turma pelas máquinas e salve.
+                               Cada computador comporta até 2 alunos. O que você salvar
+                               aqui entra no histórico do laboratório.</p>
+                        </div>
+                        <button class="botao botao--vazio botao--pequeno"
+                                id="botaoAtualizarAlocacao">Atualizar</button>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="linha-campos linha-campos--2">
+                            <div class="campo">
+                                <label for="alocacaoAula">Aula no laboratório</label>
+                                <select id="alocacaoAula">
+                                    <option value="">Carregando…</option>
+                                </select>
+                            </div>
+                            <div class="campo">
+                                <label for="alocacaoTurma">Turma</label>
+                                <select id="alocacaoTurma" disabled>
+                                    <option value="">Escolha uma aula</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="alocacaoAviso" class="aviso aviso--info oculto"></div>
+                    </div>
+
+                    <div id="alocacaoPainel" class="oculto">
+                        <div class="cartao">
+                            <div class="cartao__topo">
+                                <h3>Distribuição da turma</h3>
+                                <span class="selo selo--info" id="alocacaoContagem">0 alocados</span>
+                            </div>
+                            <p class="dica" id="alocacaoDica">
+                                Toque em um aluno e depois no computador dele — ou no
+                                computador e depois no aluno. Para tirar alguém, toque no
+                                nome dentro da máquina.
+                            </p>
+
+                            <div class="barra-botoes barra-botoes--alocacao">
+                                <div class="campo campo--inline">
+                                    <label for="alocacaoQtd">Computadores nesta aula</label>
+                                    <input type="number" id="alocacaoQtd" min="1" max="60"
+                                           inputmode="numeric">
+                                </div>
+                                <div class="barra-botoes" style="margin:0">
+                                    <!-- O mesmo botao do fim do cartao: quem distribui a
+                                         turma pelo celular nao deveria rolar a lista
+                                         inteira so para gravar. Os dois andam juntos
+                                         pelo `data-acao` — ver `botoes()` no app.js. -->
+                                    <button type="button" class="botao botao--pequeno"
+                                            data-acao="salvarAlocacao">
+                                        Salvar registro da aula</button>
+                                    <button type="button" class="botao botao--pequeno botao--vazio"
+                                            id="botaoDuplas">Formar duplas</button>
+                                    <button type="button" class="botao botao--pequeno botao--vazio"
+                                            id="botaoLimparAlocacao">Limpar</button>
+                                </div>
+                            </div>
+
+                            <div class="alocador">
+                                <div class="alocador__turma">
+                                    <div class="alocador__titulo">
+                                        <span class="rotulo-pequeno">Alunos da turma</span>
+                                        <span class="selo selo--info" id="alocacaoRestantes">—</span>
+                                    </div>
+                                    <div class="busca" style="margin:0 0 10px">
+                                        <svg class="busca__icone" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" aria-hidden="true">
+                                            <circle cx="11" cy="11" r="7"/>
+                                            <path d="M20.5 20.5 16 16"/>
+                                        </svg>
+                                        <input type="search" id="buscaAlunoAlocacao"
+                                               placeholder="Buscar aluno">
+                                    </div>
+                                    <div id="listaAlunosTurma" class="lista-alunos"></div>
+                                </div>
+
+                                <div class="alocador__lab">
+                                    <div class="alocador__titulo">
+                                        <span class="rotulo-pequeno">Laboratório</span>
+                                        <span class="texto-suave" style="font-size:.76rem"
+                                              id="alocacaoLegenda"></span>
+                                    </div>
+                                    <div id="listaComputadores" class="computadores"></div>
+                                </div>
+                            </div>
+
+                            <div class="divisor"></div>
+
+                            <div class="campo">
+                                <label for="alocacaoObservacao">Observação (opcional)</label>
+                                <input type="text" id="alocacaoObservacao" maxlength="400"
+                                       placeholder="ex.: máquinas 7 e 12 sem internet">
+                            </div>
+
+                            <div class="barra-botoes">
+                                <button type="button" class="botao" data-acao="salvarAlocacao">
+                                    Salvar registro da aula
+                                </button>
+                                <button type="button" class="botao botao--perigo oculto"
+                                        id="botaoExcluirAlocacao">
+                                    Excluir registro
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ---------- PROJETOS NO INTERVALO ---------- -->
+                <section id="abaProjetos" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Projetos no intervalo</h1>
+                            <p id="projetoExplicacao">
+                                O laboratório fica livre no intervalo depois da 5ª aula.
+                                A reserva ocupa 50 minutos dele, com um professor
+                                responsável e o nome do projeto — que já vem preenchido
+                                como <strong>Elaboração de Projetos</strong> e pode ser
+                                trocado pelo nome do evento.
+                            </p>
+                        </div>
+                        <button class="botao botao--vazio botao--pequeno"
+                                id="botaoAtualizarProjetos">Atualizar</button>
+                    </div>
+
+                    <div class="cartao cartao--destaque">
+                        <div id="projetoAvisoGestor" class="aviso aviso--info oculto"></div>
+                        <form id="formProjeto">
+                            <div class="janela-intervalo" id="projetoJanela"></div>
+
+                            <div class="linha-campos linha-campos--2">
+                                <div class="campo">
+                                    <label for="projetoLaboratorio">Laboratório</label>
+                                    <select id="projetoLaboratorio" required></select>
+                                </div>
+                                <div class="campo">
+                                    <label for="projetoData">Data</label>
+                                    <input type="date" id="projetoData" required>
+                                </div>
+                            </div>
+
+                            <div class="linha-campos linha-campos--2">
+                                <div class="campo">
+                                    <label for="projetoNome">Nome do projeto ou evento</label>
+                                    <input type="text" id="projetoNome" required maxlength="120"
+                                           placeholder="Elaboração de Projetos">
+                                </div>
+                                <div class="campo oculto" id="campoProjetoTurno">
+                                    <label for="projetoTurno">Turno do intervalo</label>
+                                    <select id="projetoTurno"></select>
+                                </div>
+                            </div>
+
+                            <div class="campo">
+                                <label for="projetoObservacao">Observação (opcional)</label>
+                                <input type="text" id="projetoObservacao" maxlength="400"
+                                       placeholder="ex.: grupo do 3º ano, apresentação na sexta">
+                            </div>
+
+                            <div id="erroProjeto" class="aviso aviso--erro oculto"></div>
+
+                            <div class="barra-botoes">
+                                <button type="submit" class="botao" id="botaoReservarProjeto">
+                                    Reservar o intervalo
+                                </button>
+                                <span class="texto-suave" id="resumoProjeto"></span>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="cartao__topo">
+                            <h3>Reservas do intervalo</h3>
+                            <div class="alternador" id="filtroProjetos">
+                                <button type="button" class="alternador__item alternador__item--ativo"
+                                        data-escopo="meus">Minhas</button>
+                                <button type="button" class="alternador__item"
+                                        data-escopo="escola">Da escola</button>
+                            </div>
+                        </div>
+                        <div id="listaProjetos"></div>
+                    </div>
+
+                    <!-- painel de execução: aparece ao registrar uma reserva -->
+                    <div id="registroProjeto" class="oculto">
+                        <div class="cartao">
+                            <div class="cartao__topo">
+                                <h3 id="registroProjetoTitulo">Computadores do projeto</h3>
+                                <span class="selo selo--info" id="registroContagem">0 alunos</span>
+                            </div>
+                            <p class="dica">
+                                Escolha uma turma, toque em um aluno e depois no
+                                computador dele — ou no computador e depois no
+                                aluno. Cada máquina comporta até 2 alunos. Para
+                                tirar alguém, toque no nome dentro da máquina.
+                                <strong>Trocar de turma não desfaz nada</strong>: quem
+                                já está sentado continua, e o projeto pode juntar
+                                alunos de várias turmas.
+                            </p>
+
+                            <div id="registroAviso" class="aviso aviso--info oculto"></div>
+
+                            <div class="barra-botoes barra-botoes--alocacao">
+                                <div class="campo campo--inline">
+                                    <label for="registroQtd">Computadores em uso</label>
+                                    <input type="number" id="registroQtd" min="1" max="60"
+                                           inputmode="numeric">
+                                </div>
+                                <div class="barra-botoes" style="margin:0">
+                                    <!-- Os mesmos dois botoes do fim do painel, repetidos
+                                         aqui em cima; o `data-acao` mantem os pares em dia
+                                         (ligado, desligado, escondido). -->
+                                    <button type="button" class="botao botao--pequeno"
+                                            data-acao="salvarRegistro">
+                                        Salvar registro do projeto</button>
+                                    <button type="button"
+                                            class="botao botao--pequeno botao--perigo oculto"
+                                            data-acao="excluirRegistro">Excluir registro</button>
+                                    <button type="button" class="botao botao--pequeno botao--vazio"
+                                            id="botaoLimparRegistro">Limpar</button>
+                                    <button type="button" class="botao botao--pequeno botao--vazio"
+                                            id="botaoFecharRegistro">Fechar</button>
+                                </div>
+                            </div>
+
+                            <p class="busca__contagem" id="registroRetorno"></p>
+
+                            <div class="divisor"></div>
+
+                            <div class="alocador">
+                                <div class="alocador__turma">
+                                    <div class="alocador__titulo">
+                                        <span class="rotulo-pequeno">Alunos da turma</span>
+                                        <span class="selo selo--info"
+                                              id="registroTurmaContagem">—</span>
+                                    </div>
+                                    <div class="campo" style="margin:0 0 10px">
+                                        <label for="registroTurma">Turma</label>
+                                        <select id="registroTurma">
+                                            <option value="">Escolha uma turma</option>
+                                        </select>
+                                    </div>
+                                    <div class="busca" style="margin:0 0 10px">
+                                        <svg class="busca__icone" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" aria-hidden="true">
+                                            <circle cx="11" cy="11" r="7"/>
+                                            <path d="M20.5 20.5 16 16"/>
+                                        </svg>
+                                        <input type="search" id="buscaAlunoRegistro"
+                                               placeholder="Buscar aluno">
+                                    </div>
+                                    <div id="registroAlunosTurma" class="lista-alunos"></div>
+                                </div>
+
+                                <div class="alocador__lab">
+                                    <div class="alocador__titulo">
+                                        <span class="rotulo-pequeno">Laboratório</span>
+                                        <span class="texto-suave" style="font-size:.76rem"
+                                              id="registroLegenda"></span>
+                                    </div>
+                                    <div id="registroComputadores" class="computadores"></div>
+                                </div>
+                            </div>
+
+                            <div class="divisor"></div>
+
+                            <div class="campo">
+                                <label for="registroObservacao">Observação (opcional)</label>
+                                <input type="text" id="registroObservacao" maxlength="400"
+                                       placeholder="ex.: máquinas 7 e 12 sem internet">
+                            </div>
+
+                            <div class="barra-botoes">
+                                <button type="button" class="botao" data-acao="salvarRegistro">
+                                    Salvar registro do projeto
+                                </button>
+                                <button type="button" class="botao botao--perigo oculto"
+                                        data-acao="excluirRegistro">
+                                    Excluir registro
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ---------- MEU HORÁRIO ---------- -->
+                <section id="abaHorario" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Meu horário de aulas</h1>
+                            <p>A grade montada pela coordenação: turma, disciplina e sala de
+                               cada aula da semana. Só para consulta.</p>
+                        </div>
+                        <button class="botao botao--vazio botao--pequeno" id="botaoAtualizarHorario">
+                            Atualizar
+                        </button>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="cartao__topo"><h3>Minha grade de aulas</h3></div>
+                        <div class="navegacao-semana">
+                            <button class="botao botao--vazio botao--pequeno"
+                                    type="button" id="semanaAnteriorProf">← Semana anterior</button>
+                            <div class="navegacao-semana__rotulo">
+                                <strong id="rotuloSemanaProf">—</strong>
+                                <button class="botao-texto oculto" type="button"
+                                        id="voltarSemanaAtualProf">Voltar para esta semana</button>
+                            </div>
+                            <button class="botao botao--vazio botao--pequeno"
+                                    type="button" id="semanaSeguinteProf">Próxima semana →</button>
+                        </div>
+                        <!-- no celular a grade sai um dia de cada vez -->
+                        <div class="seletor-dias" id="seletorDiasHorario"></div>
+                        <div id="minhaGradeCompleta"></div>
+                    </div>
+
+                    <!-- só aparece quando a coordenação libera a grade da escola -->
+                    <div class="cartao oculto" id="cartaoGradeEscola" style="margin-top:18px">
+                        <div class="cartao__topo"><h3>Grade da escola</h3></div>
+                        <p class="dica">O horário de todos os professores, na mesma semana
+                           escolhida acima. Escolha um nome para ver a semana dele.</p>
+                        <div class="campo">
+                            <label for="seletorProfessorGrade">Professor(a)</label>
+                            <select id="seletorProfessorGrade"></select>
+                        </div>
+                        <div class="seletor-dias" id="seletorDiasEscola"></div>
+                        <div id="gradeDaEscola"></div>
+                    </div>
+                </section>
+
+                <!-- ---------- CALENDÁRIO ESCOLAR (PDF) ---------- -->
+                <!-- O conteúdo sai do calendario.js, o mesmo do painel do gestor. -->
+                <section id="abaCalendarioEscolar" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Calendário escolar</h1>
+                            <p>O calendário do ano letivo publicado pela coordenação da
+                               escola, para consultar no computador ou no celular.</p>
+                        </div>
+                    </div>
+                    <div id="calendarioArquivoAtivo"></div>
+                    <div id="calendarioLeitor"></div>
+                </section>
+
+                <!-- ---------- REGRAS ---------- -->
+                <section id="abaRegras" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Como funcionam as reservas</h1>
+                            <p>Regras definidas pela coordenação. Elas valem para todos os professores.</p>
+                        </div>
+                    </div>
+                    <div id="conteudoRegras" class="grade-cartoes grade-cartoes--3"></div>
+                </section>
+
+                <!-- ---------- RELATÓRIO ---------- -->
+                <section id="abaRelatorio" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Meu relatório de uso</h1>
+                            <p>Quanto você usou os laboratórios no período: por laboratório,
+                               por turno e por tipo de aula.</p>
+                        </div>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="linha-campos linha-campos--3">
+                            <div class="campo">
+                                <label for="meuRelDe">De</label>
+                                <input type="date" id="meuRelDe">
+                            </div>
+                            <div class="campo">
+                                <label for="meuRelAte">Até</label>
+                                <input type="date" id="meuRelAte">
+                            </div>
+                            <div class="campo" style="justify-content:flex-end">
+                                <button class="botao" id="botaoGerarMeuRelatorio" type="button">
+                                    Gerar relatório
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="conteudoMeuRelatorio"></div>
+                </section>
+
+                <!-- ---------- CONTA ---------- -->
+                <section id="abaConta" class="aba oculto">
+                    <div class="cabecalho-secao">
+                        <div>
+                            <h1>Minha conta</h1>
+                            <p>Confira seus dados e mantenha o contato em dia — é por ele que
+                               a coordenação envia os avisos.</p>
+                        </div>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="cartao__topo"><h3>Meus dados</h3></div>
+                        <div class="ficha">
+                            <div class="ficha__item">
+                                <span class="rotulo-pequeno">Matrícula</span>
+                                <strong class="mono" id="contaMatricula">—</strong>
+                            </div>
+                            <div class="ficha__item">
+                                <span class="rotulo-pequeno">Disciplina</span>
+                                <strong id="contaDisciplina">—</strong>
+                            </div>
+                            <div class="ficha__item">
+                                <span class="rotulo-pequeno">Aulas reservadas</span>
+                                <strong id="contaReservas">—</strong>
+                            </div>
+                        </div>
+                        <p class="dica">Matrícula e disciplina são mantidas pela
+                           coordenação. Se algo estiver errado, fale com ela.</p>
+                    </div>
+
+                    <div class="grade-cartoes">
+                        <form id="formContato" class="cartao">
+                            <div class="cartao__topo"><h3>Perfil</h3></div>
+                            <div class="campo-foto">
+                                <div class="avatar avatar--grande" id="contaAvatar">--</div>
+                                <div class="campo-foto__botoes">
+                                    <button type="button" class="botao botao--vazio botao--pequeno"
+                                            id="botaoAlterarFoto">Alterar foto</button>
+                                    <button type="button"
+                                            class="botao botao--vazio botao--pequeno oculto"
+                                            id="botaoRemoverFoto">Remover foto</button>
+                                    <input type="file" id="contaFoto" accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                                           class="oculto">
+                                </div>
+                            </div>
+                            <div class="campo">
+                                <label for="contaNomeCampo">Nome completo</label>
+                                <input type="text" id="contaNomeCampo" required>
+                            </div>
+                            <div class="campo">
+                                <label for="contaEmail">E-mail institucional</label>
+                                <input type="email" id="contaEmail"
+                                       placeholder="nome@escola.edu.br">
+                            </div>
+                            <div class="campo">
+                                <label for="contaTelefone">WhatsApp (com DDD)</label>
+                                <input type="text" id="contaTelefone" class="mono"
+                                       inputmode="numeric"
+                                       placeholder="(81)9 8458-7555">
+                            </div>
+                            <p class="dica">O e-mail também serve para entrar no sistema,
+                               no lugar da matrícula.</p>
+                            <div id="erroContato" class="aviso aviso--erro oculto"></div>
+                            <button class="botao" type="submit">Salvar perfil</button>
+                        </form>
+
+                        <form id="formSenhaProfessor" class="cartao">
+                            <div class="cartao__topo"><h3>Senha</h3></div>
+                            <div class="campo">
+                                <label for="senhaAtualProf">Senha atual</label>
+                                <input type="password" id="senhaAtualProf" data-olho
+                                       autocomplete="current-password" required>
+                            </div>
+                            <div class="campo">
+                                <label for="senhaNovaProf">Nova senha</label>
+                                <input type="password" id="senhaNovaProf" data-olho
+                                       autocomplete="new-password"
+                                       placeholder="mínimo 6 caracteres" required>
+                            </div>
+                            <div class="campo">
+                                <label for="senhaConfirmaProf">Repita a nova senha</label>
+                                <input type="password" id="senhaConfirmaProf" data-olho
+                                       autocomplete="new-password" required>
+                            </div>
+                            <div id="erroSenhaProfessor" class="aviso aviso--erro oculto"></div>
+                            <button class="botao" type="submit">Trocar senha</button>
+                        </form>
+                    </div>
+
+                    <div class="cartao">
+                        <div class="cartao__topo"><h3>Minha grade de aulas</h3></div>
+                        <p class="dica">Turma, disciplina e sala de cada aula da sua semana,
+                           montadas pela coordenação.</p>
+                        <button class="botao botao--vazio botao--pequeno" type="button"
+                                id="botaoIrParaHorario">Ver meu horário</button>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</div>
+
+<!-- =================== MODAL E NOTIFICAÇÕES =================== -->
+<div id="areaModal"></div>
+<div class="notificacoes" id="notificacoes"></div>
+
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/calendario.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% if bloquear_atalhos %}
+<script src="{{ url_for('static', filename='js/bloqueio.js') }}"></script>
+{% endif %}
+</body>
+</html>
