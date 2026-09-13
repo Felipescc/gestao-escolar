@@ -1,0 +1,25 @@
+# A pasta dados NUNCA vai na imagem: o banco de verdade fica no volume /data.
+# Se ela entrasse aqui, cada atualizacao levaria uma copia antiga junto.
+dados/
+
+# planilhas e documentos da secretaria (usados so nas importacoes locais)
+alunos/
+*.xlsx
+*.xls
+*.docx
+
+.git/
+.gitignore
+.claude/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+*.log
+iniciar.bat
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

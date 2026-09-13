@@ -1,0 +1,41 @@
+# Dados de execução (banco real, chave de sessão) — nunca versionar em texto
+# puro. As versões criptografadas (.enc) e o salt são liberadas abaixo; veja
+# criptografar_dados.py / descriptografar_dados.py.
+dados/*
+!dados/*.enc
+!dados/salt.bin
+# dados/escola.sql NAO sobe para o Git. Ele e o banco em texto puro: nome
+# completo, data de nascimento, raca/cor, endereco, telefone, e-mail e
+# responsavel de cada aluno. As senhas ficam de fora (veja exportar_sql.py),
+# mas o resto sao dados pessoais de menores -- e o que entra no Git fica no
+# historico para sempre, mesmo que o arquivo seja apagado depois.
+# O arquivo continua sendo gerado normalmente no seu PC; so nao e versionado.
+# Para acompanhar o historico do banco existe dados/escola.db.enc, criptografado.
+
+# Planilhas da secretaria: sao a ORIGEM dos mesmos dados pessoais que o
+# escola.sql traz -- matricula, nome completo, data de nascimento e sexo de
+# cada aluno, e a lista de assinaturas. Nao adiantaria manter o escola.sql
+# fora do Git e versionar as planilhas que deram origem a ele.
+# Elas continuam no seu PC para as importacoes (import_alunos.py).
+alunos/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Configuração local do Claude Code (não é do projeto)
+.claude/settings.local.json
+
+# Editor / SO
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Arquivos temporários gerados durante testes
+*.log

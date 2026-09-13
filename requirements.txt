@@ -1,0 +1,14 @@
+Flask>=3.0
+cryptography>=42.0
+openpyxl>=3.1
+# conversao das fotos HEIC do iPhone para JPEG
+Pillow>=10.0
+pillow-heif>=0.16
+# leitura das planilhas .xls da secretaria (import_alunos.py)
+xlrd>=2.0
+
+# servidor de producao (hospedagem no Railway); no PC da escola continua
+# valendo o "python app.py"
+gunicorn>=21.2
+# envio das fotos e dos backups para o Cloudflare R2
+boto3>=1.34
